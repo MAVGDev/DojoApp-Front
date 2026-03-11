@@ -1,0 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-dojo-black text-dojo-text font-body antialiased;
+    background-image: 
+      radial-gradient(ellipse at 20% 50%, rgba(192,57,43,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(212,175,55,0.03) 0%, transparent 50%);
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-dojo-dark;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-dojo-muted rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-dojo-red;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-dojo-card border border-dojo-border rounded-xl shadow-card;
+  }
+
+  .card-hover {
+    @apply card transition-all duration-300 hover:border-dojo-red/30 hover:shadow-card-hover hover:-translate-y-0.5;
+  }
+
+  .btn-primary {
+    @apply bg-dojo-red hover:bg-dojo-red-bright text-white font-body font-600 px-6 py-2.5 rounded-lg 
+           transition-all duration-200 hover:shadow-dojo active:scale-95 text-sm tracking-wide;
+  }
+
+  .btn-secondary {
+    @apply bg-transparent border border-dojo-border hover:border-dojo-red/50 text-dojo-text 
+           hover:text-dojo-light font-body px-6 py-2.5 rounded-lg transition-all duration-200 text-sm;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-dojo-text hover:text-dojo-light hover:bg-dojo-muted/30
+           px-4 py-2 rounded-lg transition-all duration-200 text-sm;
+  }
+
+  .input {
+    @apply bg-dojo-dark border border-dojo-border rounded-lg px-4 py-2.5 text-dojo-light 
+           placeholder-dojo-muted text-sm w-full
+           focus:outline-none focus:border-dojo-red/60 focus:ring-1 focus:ring-dojo-red/20
+           transition-all duration-200;
+  }
+
+  .label {
+    @apply text-xs font-mono text-dojo-text/60 uppercase tracking-widest mb-1.5 block;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono font-500;
+  }
+
+  .badge-red    { @apply badge bg-dojo-red/15 text-dojo-red-bright border border-dojo-red/20; }
+  .badge-gold   { @apply badge bg-dojo-gold/15 text-dojo-gold-light border border-dojo-gold/20; }
+  .badge-green  { @apply badge bg-dojo-success/15 text-green-400 border border-dojo-success/20; }
+  .badge-gray   { @apply badge bg-dojo-muted/30 text-dojo-text border border-dojo-border; }
+  .badge-blue   { @apply badge bg-dojo-info/15 text-blue-400 border border-dojo-info/20; }
+
+  .stat-card {
+    @apply card p-5 flex flex-col gap-2;
+  }
+
+  .page-header {
+    @apply mb-8;
+  }
+
+  .page-title {
+    @apply font-display text-4xl text-dojo-white tracking-wide;
+  }
+
+  .page-subtitle {
+    @apply text-dojo-text/60 text-sm mt-1 font-body;
+  }
+
+  .divider {
+    @apply border-t border-dojo-border;
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-dojo-text
+           hover:bg-dojo-muted/20 hover:text-dojo-light transition-all duration-200 cursor-pointer;
+  }
+
+  .sidebar-link.active {
+    @apply bg-dojo-red/10 text-dojo-red-bright border-r-2 border-dojo-red;
+  }
+
+  .table-row {
+    @apply border-b border-dojo-border/50 hover:bg-dojo-muted/10 transition-colors duration-150;
+  }
+
+  .table-header {
+    @apply text-xs font-mono text-dojo-text/50 uppercase tracking-widest py-3 px-4 text-left;
+  }
+
+  .table-cell {
+    @apply py-3 px-4 text-sm text-dojo-text;
+  }
+
+  .alert-banner {
+    @apply flex items-start gap-3 p-4 rounded-lg border text-sm;
+  }
+
+  .alert-red    { @apply alert-banner bg-dojo-red/10 border-dojo-red/30 text-dojo-text; }
+  .alert-gold   { @apply alert-banner bg-dojo-gold/10 border-dojo-gold/30 text-dojo-text; }
+  .alert-green  { @apply alert-banner bg-dojo-success/10 border-dojo-success/30 text-dojo-text; }
+}
+
+@layer utilities {
+  .font-600 { font-weight: 600; }
+  .font-500 { font-weight: 500; }
+  .text-balance { text-wrap: balance; }
+
+  .glow-red {
+    box-shadow: 0 0 20px rgba(192,57,43,0.3), 0 0 40px rgba(192,57,43,0.1);
+  }
+
+  .belt-blanco      { @apply bg-white text-black; }
+  .belt-amarillo    { @apply bg-yellow-400 text-black; }
+  .belt-naranja     { @apply bg-orange-500 text-white; }
+  .belt-verde       { @apply bg-green-600 text-white; }
+  .belt-azul        { @apply bg-blue-600 text-white; }
+  .belt-violeta     { @apply bg-purple-700 text-white; }
+  .belt-marron      { @apply bg-amber-800 text-white; }
+  .belt-rojo        { @apply bg-red-600 text-white; }
+  .belt-negro       { @apply bg-dojo-black text-dojo-gold border border-dojo-gold/40; }
+
+  .fade-in {
+    animation: fadeIn 0.4s ease forwards;
+  }
+
+  .slide-up {
+    animation: slideUp 0.4s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse-red {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(192,57,43,0.4); }
+    50%       { box-shadow: 0 0 0 8px rgba(192,57,43,0); }
+  }
+
+  .pulse-alert {
+    animation: pulse-red 2s infinite;
+  }
+}
