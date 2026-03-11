@@ -1,13 +1,12 @@
 import axios from 'axios';
 
-// Usamos la variable de entorno configurada en Netlify.
-// Si no encuentra la variable, por defecto usará localhost para desarrollo.
+// La baseURL apunta a la raíz de tu API en Render (sin /api al final)
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Adjuntar el token a cada solicitud automáticamente
+// Interceptor para enviar el token automáticamente
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('dojo_token');
   if (token) {
@@ -16,7 +15,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Manejo global de errores (401 - Sesión expirada)
+// Interceptor para manejar errores 401 (token expirado)
 api.interceptors.response.use(
   (res) => res,
   (err) => {
