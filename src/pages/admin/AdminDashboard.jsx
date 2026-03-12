@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Users, CreditCard, Calendar, AlertTriangle, TrendingUp, Clock, ChevronRight } from 'lucide-react'
+import { Users, CreditCard, Calendar, AlertTriangle, Clock, ChevronRight } from 'lucide-react'
 import { dashboardService } from '../../services/index'
 import { StatCard, CardSkeleton, BeltBadge, Avatar } from '../../components/ui/index'
 import { fmtCurrency, fmtDate, fmtRelative, getMartialArtLabel } from '../../utils/helpers'
@@ -23,30 +23,32 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function load() {
       try {
-        console.log('🔄 Cargando dashboard...')
         const s = await dashboardService.getStats()
-        console.log('✅ stats:', s)
-        setStats(s)
+        // El backend devuelve { success, data: { totalEstudiantes, ingresosMes, ... } }
+        setStats(s?.data ?? s)
 
         const d = await dashboardService.getDistribution()
-        console.log('✅ dist:', d)
-        setDist(Array.isArray(d) ? d : (d?.data ?? d?.distribution ?? []))
+        // El backend devuelve { success, data: [ { arte_marcial, cantidad }, ... ] }
+        const distArr = d?.data ?? d?.distribution ?? (Array.isArray(d) ? d : [])
+        setDist(distArr)
 
         const p = await dashboardService.getPaymentsStatus()
-        console.log('✅ payments:', p)
+        // El backend devuelve { success, data: { pagados: {cantidad,total}, pendientes, vencidos } }
         setPayments(p?.data ?? p)
 
         const a = await dashboardService.getActiveAlerts()
-        console.log('✅ alerts:', a)
+        // El backend devuelve { success, data: { pagosPendientes, eventosProximos } }
         setAlerts(a?.data ?? a)
 
         const r = await dashboardService.getRecentStudents()
-        console.log('✅ recent:', r)
-        setRecent(Array.isArray(r?.data) ? r.data : (r?.students ?? []))
+        // El backend devuelve { success, data: [ ...students ] }
+        const recentArr = r?.data ?? r?.students ?? (Array.isArray(r) ? r : [])
+        setRecent(recentArr)
 
         const e = await dashboardService.getAdminUpcomingEvents()
-        console.log('✅ events:', e)
-        setEvents(Array.isArray(e?.data) ? e.data : (e?.events ?? []))
+        // El backend devuelve { success, data: [ ...events ] }
+        const eventsArr = e?.data ?? e?.events ?? (Array.isArray(e) ? e : [])
+        setEvents(eventsArr)
       } catch (err) {
         console.error('❌ Dashboard error:', err)
       } finally {
@@ -56,22 +58,30 @@ export default function AdminDashboard() {
     load()
   }, [])
 
-  // Normalize dist data for chart
+  // Normalizar datos para el gráfico de distribución
+  // Backend devuelve { arte_marcial, cantidad, porcentaje } o { _id, count }
   const distData = dist.map((d) => ({
-    name: getMartialArtLabel(d.arteMarcial ?? d.arte_marcial ?? d.name ?? d._id),
-    value: d.count ?? d.cantidad ?? d.quantity ?? 0,
+    name: getMartialArtLabel(d.arte_marcial ?? d.arteMarcial ?? d._id ?? d.name),
+    value: d.cantidad ?? d.count ?? 0,
   }))
 
-  // Payment chart data
+  // Normalizar datos para el gráfico de pagos
+  // Backend devuelve { pagados: {cantidad}, pendientes: {cantidad}, vencidos: {cantidad} }
   const paymentData = payments ? [
-    { name: 'Pagados',   value: payments.paid   ?? payments.pagados   ?? 0 },
-    { name: 'Pendientes',value: payments.pending ?? payments.pendientes ?? 0 },
-    { name: 'Vencidos',  value: payments.overdue ?? payments.vencidos  ?? 0 },
+    { name: 'Pagados',    value: payments.pagados?.cantidad    ?? payments.paid    ?? 0 },
+    { name: 'Pendientes', value: payments.pendientes?.cantidad ?? payments.pending ?? 0 },
+    { name: 'Vencidos',   value: payments.vencidos?.cantidad   ?? payments.overdue ?? 0 },
   ] : []
 
+  // Alertas: backend devuelve { pagosPendientes: [...], eventosProximos: [...] }
   const alertCount = alerts
-    ? (alerts.paymentAlerts?.length ?? alerts.pagosPendientes?.length ?? 0)
+    ? (alerts.pagosPendientes?.length ?? alerts.paymentAlerts?.length ?? 0)
     : 0
+
+  // Stats: backend devuelve { totalEstudiantes, ingresosMes, eventosMes, alertasActivas }
+  const totalStudents  = stats?.totalEstudiantes  ?? stats?.totalStudents  ?? '—'
+  const monthlyRevenue = stats?.ingresosMes       ?? stats?.monthlyRevenue ?? 0
+  const monthlyEvents  = stats?.eventosMes        ?? stats?.monthlyEvents  ?? '—'
 
   return (
     <div className="space-y-8 slide-up">
@@ -108,27 +118,27 @@ export default function AdminDashboard() {
             <StatCard
               icon={Users}
               label="Alumnos activos"
-              value={stats?.totalStudents ?? stats?.totalEstudiantes ?? '—'}
+              value={totalStudents}
               sub="Total registrados"
             />
             <StatCard
               icon={CreditCard}
               label="Ingresos del mes"
-              value={fmtCurrency(stats?.monthlyRevenue ?? stats?.ingresosMes ?? 0)}
+              value={fmtCurrency(monthlyRevenue)}
               sub="Pagos completados"
               accent
             />
             <StatCard
               icon={Calendar}
               label="Eventos este mes"
-              value={stats?.monthlyEvents ?? stats?.eventosMes ?? '—'}
+              value={monthlyEvents}
               sub="Programados"
             />
             <StatCard
               icon={AlertTriangle}
               label="Alertas activas"
               value={alertCount}
-              sub="Pagos pendientes/vencidos"
+              sub="Pagos vencidos"
               alert={alertCount > 0}
             />
           </>
@@ -194,7 +204,7 @@ export default function AdminDashboard() {
                   cursor={{ fill: 'rgba(255,255,255,0.04)' }}
                 />
                 <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                  {paymentData.map((entry, i) => {
+                  {paymentData.map((_, i) => {
                     const colors = ['#27AE60', '#D4AF37', '#C0392B']
                     return <Cell key={i} fill={colors[i]} />
                   })}
@@ -225,13 +235,11 @@ export default function AdminDashboard() {
             )}
             {recent.slice(0, 5).map((s) => (
               <div key={s._id ?? s.id} className="flex items-center gap-3 py-2 border-b border-dojo-border/30 last:border-0">
-                <Avatar name={s.fullName ?? s.nombre_completo} size="sm" src={s.foto} />
+                <Avatar name={s.fullName} size="sm" src={s.foto} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-dojo-light text-sm font-500 truncate">
-                    {s.fullName ?? s.nombre_completo}
-                  </p>
+                  <p className="text-dojo-light text-sm font-500 truncate">{s.fullName}</p>
                   <p className="text-dojo-text/40 text-xs font-mono">
-                    {getMartialArtLabel(s.arteMarcial ?? s.arte_marcial)}
+                    {getMartialArtLabel(s.arteMarcial)}
                   </p>
                 </div>
                 {s.cinturonActual && <BeltBadge cinturon={s.cinturonActual} />}
@@ -266,7 +274,7 @@ export default function AdminDashboard() {
                     {fmtRelative(ev.date ?? ev.fecha)}
                   </p>
                 </div>
-                <span className={`badge text-xs badge-gray`}>
+                <span className="badge badge-gray text-xs">
                   {ev.type ?? ev.tipo}
                 </span>
               </div>

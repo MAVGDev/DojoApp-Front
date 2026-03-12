@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// La baseURL apunta a la raíz de tu API en Render (sin /api al final)
+// La baseURL incluye /api para que todas las rutas funcionen correctamente
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
+  baseURL: (import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api',
   headers: { 'Content-Type': 'application/json' },
 });
 
