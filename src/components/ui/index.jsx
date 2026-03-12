@@ -70,11 +70,37 @@ export function Avatar({ src, name, size = 'md', belt, className = '' }) {
 }
 
 // ─── BELT BADGE ───────────────────────────────────────────────────────────────
+const BELT_GRADIENT = {
+  'blanco-amarillo':  'linear-gradient(90deg, #ffffff 50%, #facc15 50%)',
+  'amarillo-naranja': 'linear-gradient(90deg, #facc15 50%, #f97316 50%)',
+  'naranja-verde':    'linear-gradient(90deg, #f97316 50%, #16a34a 50%)',
+  'verde-azul':       'linear-gradient(90deg, #16a34a 50%, #2563eb 50%)',
+  'azul-rojo':        'linear-gradient(90deg, #2563eb 50%, #dc2626 50%)',
+  'rojo-negro':       'linear-gradient(90deg, #dc2626 50%, #111111 50%)',
+}
+
 export function BeltBadge({ cinturon }) {
   if (!cinturon) return null
+  const label = BELT_LABELS[cinturon] ?? cinturon
+
+  if (cinturon in BELT_GRADIENT) {
+    return (
+      <span
+        className="badge text-xs px-2.5 py-0.5 rounded-full font-mono border border-gray-400/30"
+        style={{
+          background: BELT_GRADIENT[cinturon],
+          color: cinturon === 'rojo-negro' ? '#facc15' : '#111111',
+          textShadow: cinturon === 'rojo-negro' ? 'none' : '0 0 4px rgba(255,255,255,0.5)',
+        }}
+      >
+        {label}
+      </span>
+    )
+  }
+
   return (
     <span className={`badge text-xs px-2.5 py-0.5 rounded-full font-mono ${getBeltBadge(cinturon)}`}>
-      {BELT_LABELS[cinturon] ?? cinturon}
+      {label}
     </span>
   )
 }

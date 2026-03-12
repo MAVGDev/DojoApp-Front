@@ -164,3 +164,27 @@ export const dashboardService = {
     return res.data
   },
 }
+
+// ─── CHARGES ─────────────────────────────────────────────────────────────────
+export const chargeService = {
+  getAll: async (params = {}) => {
+    const res = await api.get('/charges', { params })
+    return res.data
+  },
+  getMyCharges: async () => {
+    const res = await api.get('/charges/me')
+    return res.data
+  },
+  create: async (payload) => {
+    const res = await api.post('/charges', payload)
+    return res.data
+  },
+  markAsPaid: async (id, payload = {}) => {
+    const res = await api.put(`/charges/${id}/paid`, payload)
+    return res.data
+  },
+  delete: async (id) => {
+    const res = await api.delete(`/charges/${id}`)
+    return res.data
+  },
+}

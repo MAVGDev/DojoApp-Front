@@ -15,13 +15,14 @@ export default function StudentDashboard() {
     async function load() {
       try {
         const prof = await studentService.getMyProfile()
-        // studentController devuelve { message, profile: {...} }
         const studentData = prof?.profile ?? prof?.student ?? prof
         setProfile(studentData)
+
         const studentId = studentData?._id
         if (studentId) {
           const dash = await dashboardService.getStudentDashboard(studentId)
-          setDashboard(dash)
+          // Backend devuelve { success, data: { perfil, pagos, eventos, progresion } }
+          setDashboard(dash?.data ?? dash)
         }
       } catch (err) {
         console.error(err)
@@ -44,13 +45,22 @@ export default function StudentDashboard() {
   const belt    = profile?.cinturonActual ?? 'blanco'
   const beltIdx = BELT_ORDER.indexOf(belt)
   const nextBelt = beltIdx < BELT_ORDER.length - 1 ? BELT_ORDER[beltIdx + 1] : null
-  const payments = Array.isArray(dashboard?.payments ?? dashboard?.pagos)
-    ? (dashboard?.payments ?? dashboard?.pagos)
-    : []
+
+  // Backend devuelve 'pagos' dentro de data
+  const payments = Array.isArray(dashboard?.pagos)
+    ? dashboard.pagos
+    : Array.isArray(dashboard?.payments)
+      ? dashboard.payments
+      : []
+
   const pendingCount = payments.filter(p => !p.paid).length
-  const events = Array.isArray(dashboard?.events ?? dashboard?.eventos)
-    ? (dashboard?.events ?? dashboard?.eventos)
-    : []
+
+  // Backend devuelve 'eventos' dentro de data
+  const events = Array.isArray(dashboard?.eventos)
+    ? dashboard.eventos
+    : Array.isArray(dashboard?.events)
+      ? dashboard.events
+      : []
 
   return (
     <div className="space-y-8 slide-up">
@@ -104,22 +114,28 @@ export default function StudentDashboard() {
           {BELT_ORDER.map((b, i) => {
             const passed  = i < beltIdx
             const current = i === beltIdx
+            const COLORS = {
+              'blanco':           'bg-white text-black border border-gray-300',
+              'blanco-amarillo':  'bg-gradient-to-r from-white to-yellow-400 text-black',
+              'amarillo':         'bg-yellow-400 text-black',
+              'amarillo-naranja': 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black',
+              'naranja':          'bg-orange-500 text-white',
+              'naranja-verde':    'bg-gradient-to-r from-orange-500 to-green-600 text-white',
+              'verde':            'bg-green-600 text-white',
+              'verde-azul':       'bg-gradient-to-r from-green-600 to-blue-600 text-white',
+              'azul':             'bg-blue-600 text-white',
+              'azul-rojo':        'bg-gradient-to-r from-blue-600 to-red-600 text-white',
+              'rojo':             'bg-red-600 text-white',
+              'rojo-negro':       'bg-gradient-to-r from-red-600 to-black text-yellow-400',
+            }
+            const colorClass = COLORS[b] ?? 'bg-black text-yellow-400 border border-yellow-500/40'
             return (
               <div key={b} className="flex flex-col items-center gap-1.5 shrink-0">
                 <div className={`
                   w-8 h-8 rounded-full flex items-center justify-center text-xs font-mono
+                  ${colorClass}
                   ${current ? 'ring-2 ring-dojo-gold ring-offset-2 ring-offset-dojo-card' : ''}
-                  ${passed  ? 'opacity-80' : current ? '' : 'opacity-20'}
-                  ${b === 'blanco' ? 'bg-white text-black border border-gray-300'
-                    : b === 'amarillo' ? 'bg-yellow-400 text-black'
-                    : b === 'naranja'  ? 'bg-orange-500 text-white'
-                    : b === 'verde'    ? 'bg-green-600 text-white'
-                    : b === 'azul'     ? 'bg-blue-600 text-white'
-                    : b === 'violeta'  ? 'bg-purple-700 text-white'
-                    : b === 'marron'   ? 'bg-amber-800 text-white'
-                    : b === 'rojo'     ? 'bg-red-600 text-white'
-                    : 'bg-black text-yellow-400 border border-yellow-500/40'
-                  }
+                  ${passed ? 'opacity-80' : current ? '' : 'opacity-20'}
                 `}>
                   {passed ? '✓' : current ? '●' : ''}
                 </div>
@@ -134,7 +150,7 @@ export default function StudentDashboard() {
 
       {/* Bottom row */}
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Recent payments */}
+        {/* Payments */}
         <div className="card p-5">
           <h3 className="font-display text-xl text-dojo-white mb-5 tracking-wide">Mis Pagos</h3>
           <div className="space-y-3">
@@ -153,7 +169,7 @@ export default function StudentDashboard() {
           </div>
         </div>
 
-        {/* Upcoming events */}
+        {/* Events */}
         <div className="card p-5">
           <h3 className="font-display text-xl text-dojo-white mb-5 tracking-wide">Mis Eventos</h3>
           <div className="space-y-3">

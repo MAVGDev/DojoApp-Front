@@ -3,47 +3,81 @@ import { es } from 'date-fns/locale'
 
 // ─── BELT ─────────────────────────────────────────────────────────────────────
 export const BELT_ORDER = [
-  'blanco','amarillo','naranja','verde',
-  'azul','violeta','marron','rojo',
-  'negro-1dan','negro-2dan','negro-3dan','negro-4dan','negro-5dan','negro-6dan'
+  'blanco',
+  'blanco-amarillo',
+  'amarillo',
+  'amarillo-naranja',
+  'naranja',
+  'naranja-verde',
+  'verde',
+  'verde-azul',
+  'azul',
+  'azul-rojo',
+  'rojo',
+  'rojo-negro',
+  'negro-1dan',
+  'negro-2dan',
+  'negro-3dan',
+  'negro-4dan',
+  'negro-5dan',
 ]
 
 export const BELT_LABELS = {
-  blanco:     'Blanco',
-  amarillo:   'Amarillo',
-  naranja:    'Naranja',
-  verde:      'Verde',
-  azul:       'Azul',
-  violeta:    'Violeta',
-  marron:     'Marrón',
-  rojo:       'Rojo',
-  'negro-1dan':'Negro 1º Dan',
-  'negro-2dan':'Negro 2º Dan',
-  'negro-3dan':'Negro 3º Dan',
-  'negro-4dan':'Negro 4º Dan',
-  'negro-5dan':'Negro 5º Dan',
-  'negro-6dan':'Negro 6º Dan',
+  'blanco':           'Blanco',
+  'blanco-amarillo':  'Blanco / Amarillo',
+  'amarillo':         'Amarillo',
+  'amarillo-naranja': 'Amarillo / Naranja',
+  'naranja':          'Naranja',
+  'naranja-verde':    'Naranja / Verde',
+  'verde':            'Verde',
+  'verde-azul':       'Verde / Azul',
+  'azul':             'Azul',
+  'azul-rojo':        'Azul / Rojo',
+  'rojo':             'Rojo',
+  'rojo-negro':       'Rojo / Negro',
+  'negro-1dan':       'Negro 1º Dan',
+  'negro-2dan':       'Negro 2º Dan',
+  'negro-3dan':       'Negro 3º Dan',
+  'negro-4dan':       'Negro 4º Dan',
+  'negro-5dan':       'Negro 5º Dan',
 }
 
 export const BELT_CSS = {
-  blanco:     'bg-white text-black border border-gray-300',
-  amarillo:   'bg-yellow-400 text-black',
-  naranja:    'bg-orange-500 text-white',
-  verde:      'bg-green-600 text-white',
-  azul:       'bg-blue-600 text-white',
-  violeta:    'bg-purple-700 text-white',
-  marron:     'bg-amber-800 text-white',
-  rojo:       'bg-red-600 text-white',
-  'negro-1dan':'bg-black text-yellow-400 border border-yellow-500/40',
-  'negro-2dan':'bg-black text-yellow-400 border border-yellow-500/40',
-  'negro-3dan':'bg-black text-yellow-400 border border-yellow-500/40',
-  'negro-4dan':'bg-black text-yellow-400 border border-yellow-500/40',
-  'negro-5dan':'bg-black text-yellow-400 border border-yellow-500/40',
-  'negro-6dan':'bg-black text-yellow-400 border border-yellow-500/40',
+  'blanco':           'bg-white text-gray-800 border border-gray-300',
+  'blanco-amarillo':  'belt-split',
+  'amarillo':         'bg-yellow-400 text-gray-900',
+  'amarillo-naranja': 'belt-split',
+  'naranja':          'bg-orange-500 text-white',
+  'naranja-verde':    'belt-split',
+  'verde':            'bg-green-600 text-white',
+  'verde-azul':       'belt-split',
+  'azul':             'bg-blue-600 text-white',
+  'azul-rojo':        'belt-split',
+  'rojo':             'bg-red-600 text-white',
+  'rojo-negro':       'belt-split',
+  'negro-1dan':       'bg-black text-yellow-400 border border-yellow-500/40',
+  'negro-2dan':       'bg-black text-yellow-400 border border-yellow-500/40',
+  'negro-3dan':       'bg-black text-yellow-400 border border-yellow-500/40',
+  'negro-4dan':       'bg-black text-yellow-400 border border-yellow-500/40',
+  'negro-5dan':       'bg-black text-yellow-400 border border-yellow-500/40',
+}
+
+// Gradientes para cinturones mixtos — se aplican como style inline en BeltBadge
+export const BELT_GRADIENT = {
+  'blanco-amarillo':  'linear-gradient(90deg, #ffffff 50%, #facc15 50%)',
+  'amarillo-naranja': 'linear-gradient(90deg, #facc15 50%, #f97316 50%)',
+  'naranja-verde':    'linear-gradient(90deg, #f97316 50%, #16a34a 50%)',
+  'verde-azul':       'linear-gradient(90deg, #16a34a 50%, #2563eb 50%)',
+  'azul-rojo':        'linear-gradient(90deg, #2563eb 50%, #dc2626 50%)',
+  'rojo-negro':       'linear-gradient(90deg, #dc2626 50%, #111111 50%)',
 }
 
 export function getBeltBadge(cinturon) {
   return BELT_CSS[cinturon] || 'bg-dojo-muted text-dojo-text'
+}
+
+export function isSplitBelt(cinturon) {
+  return cinturon in BELT_GRADIENT
 }
 
 // ─── MARTIAL ARTS ─────────────────────────────────────────────────────────────
@@ -54,7 +88,7 @@ export const MARTIAL_ARTS = [
 ]
 
 export const MARTIAL_ARTS_ALL = [
-  { value: 'all',       label: 'Todas las disciplinas' },
+  { value: 'all', label: 'Todas las disciplinas' },
   ...MARTIAL_ARTS,
 ]
 
@@ -66,10 +100,10 @@ export const CATEGORIES = [
 ]
 
 export const EVENT_TYPES = [
-  { value: 'competición',    label: 'Competición'    },
-  { value: 'examen',         label: 'Examen'         },
-  { value: 'entrenamiento',  label: 'Entrenamiento'  },
-  { value: 'general',        label: 'General'        },
+  { value: 'competición',   label: 'Competición'   },
+  { value: 'examen',        label: 'Examen'        },
+  { value: 'entrenamiento', label: 'Entrenamiento' },
+  { value: 'general',       label: 'General'       },
 ]
 
 export const EVENT_TYPE_CSS = {
@@ -89,7 +123,7 @@ export function fmtDate(date, fmt = 'dd MMM yyyy') {
 }
 
 export function fmtDateTime(date) {
-  return fmtDate(date, "dd MMM yyyy · HH:mm")
+  return fmtDate(date, 'dd MMM yyyy · HH:mm')
 }
 
 export function fmtRelative(date) {
@@ -103,7 +137,6 @@ export function fmtRelative(date) {
 }
 
 export function fmtMonth(monthStr) {
-  // "2024-06" → "Junio 2024"
   if (!monthStr) return '—'
   try {
     const [year, month] = monthStr.split('-')
@@ -128,12 +161,7 @@ export function fmtCurrency(amount) {
 
 // ─── MISC ─────────────────────────────────────────────────────────────────────
 export function getInitials(name = '') {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 }
 
 export function classNames(...classes) {
@@ -141,5 +169,5 @@ export function classNames(...classes) {
 }
 
 export function getMartialArtLabel(value) {
-  return MARTIAL_ARTS.find((m) => m.value === value)?.label ?? value
+  return MARTIAL_ARTS.find(m => m.value === value)?.label ?? value
 }
