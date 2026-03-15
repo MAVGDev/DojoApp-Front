@@ -19,54 +19,61 @@ export default function AdminDashboard() {
   const [recent,   setRecent]   = useState([])
   const [events,   setEvents]   = useState([])
   const [loading,  setLoading]  = useState(true)
-
-  // Alumnos con examen próximo (dentro de 1 mes)
-  const [examAlerts,     setExamAlerts]     = useState([])
-  const [showExamModal,  setShowExamModal]  = useState(false)
+  const [examAlerts,    setExamAlerts]    = useState([])
+  const [showExamModal, setShowExamModal] = useState(false)
 
   useEffect(() => {
     async function load() {
-      try {
-        const s = await dashboardService.getStats()
-        setStats(s?.data ?? s)
+      const [s, d, p, a, r, e, allStudentsRes] = await Promise.allSettled([
+        dashboardService.getStats(),
+        dashboardService.getDistribution(),
+        dashboardService.getPaymentsStatus(),
+        dashboardService.getActiveAlerts(),
+        dashboardService.getRecentStudents(),
+        dashboardService.getAdminUpcomingEvents(),
+        studentService.getAll(),
+      ])
 
-        const d = await dashboardService.getDistribution()
-        setDist(d?.data ?? d?.distribution ?? (Array.isArray(d) ? d : []))
+      if (s.status === 'fulfilled') setStats(s.value?.data ?? s.value)
+      else console.error('❌ getStats:', s.reason)
 
-        const p = await dashboardService.getPaymentsStatus()
-        setPayments(p?.data ?? p)
+      if (d.status === 'fulfilled') {
+        const dv = d.value
+        setDist(dv?.data ?? dv?.distribution ?? (Array.isArray(dv) ? dv : []))
+      } else console.error('❌ getDistribution:', d.reason)
 
-        const a = await dashboardService.getActiveAlerts()
-        setAlerts(a?.data ?? a)
+      if (p.status === 'fulfilled') setPayments(p.value?.data ?? p.value)
+      else console.error('❌ getPaymentsStatus:', p.reason)
 
-        const r = await dashboardService.getRecentStudents()
-        setRecent(r?.data ?? r?.students ?? (Array.isArray(r) ? r : []))
+      if (a.status === 'fulfilled') setAlerts(a.value?.data ?? a.value)
+      else console.error('❌ getActiveAlerts:', a.reason)
 
-        const e = await dashboardService.getAdminUpcomingEvents()
-        setEvents(e?.data ?? e?.events ?? (Array.isArray(e) ? e : []))
+      if (r.status === 'fulfilled') {
+        const rv = r.value
+        setRecent(rv?.data ?? rv?.students ?? (Array.isArray(rv) ? rv : []))
+      } else console.error('❌ getRecentStudents:', r.reason)
 
-        // Cargar todos los alumnos para detectar exámenes en el próximo mes
-        const allStudents = await studentService.getAll()
-        const studentList = Array.isArray(allStudents)
-          ? allStudents
-          : (allStudents?.students ?? [])
+      if (e.status === 'fulfilled') {
+        const ev = e.value
+        setEvents(ev?.data ?? ev?.events ?? (Array.isArray(ev) ? ev : []))
+      } else console.error('❌ getAdminUpcomingEvents:', e.reason)
 
-        const now      = new Date()
-        const oneMonth = new Date()
-        oneMonth.setMonth(oneMonth.getMonth() + 1)
+      const studentList = allStudentsRes.status === 'fulfilled'
+        ? (Array.isArray(allStudentsRes.value) ? allStudentsRes.value : (allStudentsRes.value?.students ?? []))
+        : []
 
-        const upcoming = studentList.filter(st => {
-          if (!st.fechaProximoExamen) return false
-          const examDate = new Date(st.fechaProximoExamen)
-          return examDate >= now && examDate <= oneMonth
-        }).sort((a, b) => new Date(a.fechaProximoExamen) - new Date(b.fechaProximoExamen))
+      const now      = new Date()
+      const oneMonth = new Date()
+      oneMonth.setMonth(oneMonth.getMonth() + 1)
 
-        setExamAlerts(upcoming)
-      } catch (err) {
-        console.error('❌ Dashboard error:', err)
-      } finally {
-        setLoading(false)
-      }
+      const upcoming = studentList.filter(st => {
+        if (!st.fechaProximoExamen) return false
+        const examDate = new Date(st.fechaProximoExamen)
+        return examDate >= now && examDate <= oneMonth
+      }).sort((a, b) => new Date(a.fechaProximoExamen) - new Date(b.fechaProximoExamen))
+
+      setExamAlerts(upcoming)
+      setLoading(false)
     }
     load()
   }, [])
@@ -82,10 +89,10 @@ export default function AdminDashboard() {
     { name: 'Vencidos',   value: payments.vencidos?.cantidad   ?? payments.overdue ?? 0 },
   ] : []
 
-  const alertCount    = alerts ? (alerts.pagosPendientes?.length ?? alerts.paymentAlerts?.length ?? 0) : 0
-  const totalStudents = stats?.totalEstudiantes ?? stats?.totalStudents  ?? '—'
-  const monthlyRevenue= stats?.ingresosMes      ?? stats?.monthlyRevenue ?? 0
-  const monthlyEvents = stats?.eventosMes       ?? stats?.monthlyEvents  ?? '—'
+  const alertCount     = alerts ? (alerts.pagosPendientes?.length ?? alerts.paymentAlerts?.length ?? 0) : 0
+  const totalStudents  = stats?.totalEstudiantes ?? stats?.totalStudents  ?? '—'
+  const monthlyRevenue = stats?.ingresosMes      ?? stats?.monthlyRevenue ?? 0
+  const monthlyEvents  = stats?.eventosMes       ?? stats?.monthlyEvents  ?? '—'
 
   return (
     <div className="space-y-8 slide-up">
@@ -149,9 +156,9 @@ export default function AdminDashboard() {
             </div>
             <div className="px-6 py-5 space-y-3 max-h-96 overflow-y-auto">
               {examAlerts.map(st => {
-                const examDate  = new Date(st.fechaProximoExamen)
-                const daysLeft  = Math.ceil((examDate - new Date()) / (1000 * 60 * 60 * 24))
-                const isUrgent  = daysLeft <= 7
+                const examDate = new Date(st.fechaProximoExamen)
+                const daysLeft = Math.ceil((examDate - new Date()) / (1000 * 60 * 60 * 24))
+                const isUrgent = daysLeft <= 7
                 return (
                   <div key={st._id} className="flex items-center gap-3 py-2 border-b border-dojo-border/30 last:border-0">
                     <Avatar src={st.foto} name={st.fullName} size="sm" />
@@ -184,10 +191,10 @@ export default function AdminDashboard() {
           Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)
         ) : (
           <>
-            <StatCard icon={Users}         label="Alumnos activos"  value={totalStudents}              sub="Total registrados"        />
-            <StatCard icon={CreditCard}    label="Ingresos del mes" value={fmtCurrency(monthlyRevenue)} sub="Pagos completados" accent />
-            <StatCard icon={Calendar}      label="Eventos este mes" value={monthlyEvents}              sub="Programados"              />
-            <StatCard icon={AlertTriangle} label="Alertas activas"  value={alertCount}                 sub="Pagos vencidos" alert={alertCount > 0} />
+            <StatCard icon={Users}         label="Alumnos activos"  value={totalStudents}               sub="Total registrados"        />
+            <StatCard icon={CreditCard}    label="Ingresos del mes" value={fmtCurrency(monthlyRevenue)} sub="Pagos completados" accent  />
+            <StatCard icon={Calendar}      label="Eventos este mes" value={monthlyEvents}               sub="Programados"              />
+            <StatCard icon={AlertTriangle} label="Alertas activas"  value={alertCount}                  sub="Pagos vencidos" alert={alertCount > 0} />
           </>
         )}
       </div>
